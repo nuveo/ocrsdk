@@ -172,9 +172,9 @@ func Ocrsdk(pathFile string, language string) (string, error) {
 		case "Completed":
 			log.Println("Task Completed!")
 			stop = true
-		case "ProcessingFailed":
+		case "ProcessingFailed", "NotEnoughCredits":
 			log.Println("Task Failed!")
-			return "", fmt.Errorf("Task with problem!, Task status: %s", r.Task.Status)
+			return "", fmt.Errorf("Task status: %s", r.Task.Status)
 		default:
 			log.Println("waiting...")
 			time.Sleep(5 * time.Second)
