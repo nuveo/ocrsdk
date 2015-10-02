@@ -150,23 +150,41 @@ func Ocrsdk(pathFile string, language string) (string, error) {
 	g := fmt.Sprintf(getTaskStatus, r.Task.TaskID)
 	getURL := fmt.Sprintf("%s%s", base, g)
 
-	resp, err = http.Get(getURL)
-	if err != nil {
-		log.Println(err)
-		return "", err
+	for {
+		log.Println("Getting Task status")
+		var stop bool
+		resp, err = http.Get(getURL)
+		if err != nil {
+			log.Println(err)
+			return "", err
+		}
+
+		r, err = ProcessUnmarshal(resp)
+		if err != nil {
+			log.Println(err)
+			return "", err
+		}
+
+		switch r.Task.Status {
+		case "InProgress":
+			log.Println("Task In Progress")
+			time.Sleep(5 * time.Second)
+		case "Completed":
+			log.Println("Task Completed!")
+			stop = true
+		case "ProcessingFailed":
+			log.Println("Task Failed!")
+			return "", fmt.Errorf("Task with problem!, Task status: %s", r.Task.Status)
+		default:
+			log.Println("waiting...")
+			time.Sleep(5 * time.Second)
+		}
+
+		if stop == true {
+			break
+		}
 	}
 
-	r, err = ProcessUnmarshal(resp)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	if r.Task.Status != "Completed" {
-		return "", fmt.Errorf("Task with problem!, Task status: %s", r.Task.Status)
-	}
-
-	log.Println("Task completed!")
 	resp, err = http.Get(r.Task.DownloadURL)
 	if err != nil {
 		log.Println(err)
