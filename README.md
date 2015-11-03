@@ -9,6 +9,11 @@ ABBYY Cloud OCR SDK
 
 ### Usage
 
+
+Export to env `APPLICATION_ID` and `PASSWORD`.
+
+_See [Docs](http://ocrsdk.com/documentation/)_
+
 ```go
 package main
 
