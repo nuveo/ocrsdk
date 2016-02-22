@@ -3,20 +3,29 @@ package ocrsdk
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
-	"time"
 )
 
 const (
-	baseURL         = "http://%s:%s@cloud.ocrsdk.com"
-	processImageURL = "/processImage?language=%s&exportFormat=txt"
-	getTaskStatus   = "/getTaskStatus?taskid=%s"
+	baseURL       = "http://%s:%s@cloud.ocrsdk.com"
+	getTaskStatus = "/getTaskStatus?taskid=%s"
 )
+
+// type Ocrsdk struct {
+// 	baseURL string
+// }
+//
+// // Ocrsdk bridge to webapp OCRSDK
+// func Ocrsdk(appId, secret string) *Ocrsdk {
+// 	ocrsdk = Ocrsdk{}
+// 	ocrsdk.base = fmt.Sprintf("http://%s:%s@cloud.ocrsdk.com", appId, secret)
+//
+// 	return &ocrsdk
+// }
 
 // Response head of XML response
 type Response struct {
@@ -28,31 +37,6 @@ type Task struct {
 	TaskID      string `xml:"id,attr"`
 	Status      string `xml:"status,attr"`
 	DownloadURL string `xml:"resultUrl,attr"`
-}
-
-// Config struct with ApplicationID and Password
-type Config struct {
-	ApplicationID string
-	Password      string
-}
-
-// Setup add ApplicationID and Password in Config struct
-func (c *Config) Setup() {
-	usr := os.Getenv("APPLICATION_ID")
-	psw := os.Getenv("PASSWORD")
-
-	if usr != "" && psw != "" {
-		c.ApplicationID = usr
-		c.Password = psw
-	} else {
-		log.Fatal("Export APPLICATION_ID and PASSWORD environ vars")
-	}
-}
-
-// MakeBaseURL return url with application id and password
-func (c *Config) MakeBaseURL() string {
-	URI := fmt.Sprintf(baseURL, c.ApplicationID, c.Password)
-	return URI
 }
 
 // Creates a new file upload http request
@@ -109,93 +93,4 @@ func ProcessUnmarshal(resp *http.Response) (Response, error) {
 	}
 
 	return r, err
-}
-
-// Ocrsdk bridge to webapp OCRSDK
-func Ocrsdk(pathFile string, language string) (string, error) {
-	app := Config{}
-	app.Setup()
-	base := app.MakeBaseURL()
-
-	p := fmt.Sprintf(processImageURL, language)
-	postURL := fmt.Sprintf("%s%s", base, p)
-
-	request, err := newfileUploadRequest(postURL, pathFile)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-	log.Println("Making request to", pathFile)
-
-	client := &http.Client{}
-	resp, err := client.Do(request)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	r, err := ProcessUnmarshal(resp)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	if r.Task.Status != "Queued" {
-		return "", fmt.Errorf("Task has a problem, Task status: %s", r.Task.Status)
-	}
-
-	log.Println("Processing task!")
-	time.Sleep(3 * time.Second)
-
-	g := fmt.Sprintf(getTaskStatus, r.Task.TaskID)
-	getURL := fmt.Sprintf("%s%s", base, g)
-
-	for {
-		log.Println("Getting Task status")
-		var stop bool
-		resp, err = http.Get(getURL)
-		if err != nil {
-			log.Println(err)
-			return "", err
-		}
-
-		r, err = ProcessUnmarshal(resp)
-		if err != nil {
-			log.Println(err)
-			return "", err
-		}
-
-		switch r.Task.Status {
-		case "InProgress":
-			log.Println("Task In Progress")
-			time.Sleep(5 * time.Second)
-		case "Completed":
-			log.Println("Task Completed!")
-			stop = true
-		case "ProcessingFailed", "NotEnoughCredits":
-			log.Println("Task Failed!")
-			return "", fmt.Errorf("Task status: %s", r.Task.Status)
-		default:
-			log.Println("waiting...")
-			time.Sleep(5 * time.Second)
-		}
-
-		if stop == true {
-			break
-		}
-	}
-
-	resp, err = http.Get(r.Task.DownloadURL)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-	resp.Body.Close()
-	return string(body), nil
 }
