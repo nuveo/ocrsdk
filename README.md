@@ -27,7 +27,11 @@ func main() {
 	path := "/path/to/file.pdf"
 	lang := "English"
 
-	result, err := ocrsdk.Ocrsdk(path, lang)
+	ocrSDK := ocrsdk.NewProcessImage(os.Getenv("APPLICATION_ID"), os.Getenv("PASSWORD"))
+	ocrSDK.Language = "PortugueseBrazilian"
+	ocrSDK.Profile = "documentConversion"
+
+	result, err := ocrSDK.Do(fullPath)
 	fmt.Println(result)
 }
 ```
