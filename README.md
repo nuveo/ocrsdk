@@ -31,7 +31,7 @@ func main() {
 	ocrSDK.Language = "PortugueseBrazilian"
 	ocrSDK.Profile = "documentConversion"
 
-	result, err := ocrSDK.Do(fullPath)
+	result, err := ocrSDK.Do(path)
 	fmt.Println(result)
 }
 ```
