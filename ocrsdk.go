@@ -11,21 +11,10 @@ import (
 )
 
 const (
-	baseURL       = "http://%s:%s@cloud.ocrsdk.com"
-	getTaskStatus = "/getTaskStatus?taskid=%s"
+	baseURL        = "http://%s:%s@cloud.ocrsdk.com"
+	getTaskStatus  = "/getTaskStatus?taskid=%s"
+	submitImageURL = "/submitImage"
 )
-
-// type Ocrsdk struct {
-// 	baseURL string
-// }
-//
-// // Ocrsdk bridge to webapp OCRSDK
-// func Ocrsdk(appId, secret string) *Ocrsdk {
-// 	ocrsdk = Ocrsdk{}
-// 	ocrsdk.base = fmt.Sprintf("http://%s:%s@cloud.ocrsdk.com", appId, secret)
-//
-// 	return &ocrsdk
-// }
 
 // Response head of XML response
 type Response struct {
