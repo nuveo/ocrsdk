@@ -25,7 +25,6 @@ import (
 
 func main() {
 	path := "/path/to/file.pdf"
-	lang := "English"
 
 	ocrSDK := ocrsdk.NewProcessImage(os.Getenv("APPLICATION_ID"), os.Getenv("PASSWORD"))
 	ocrSDK.Language = "PortugueseBrazilian"
