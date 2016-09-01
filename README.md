@@ -5,7 +5,7 @@ ABBYY Cloud OCR SDK
 
 ### Install
 
-`go get github.com/poorny/ocrsdk`
+`go get github.com/nuveo/ocrsdk`
 
 ### Usage
 
@@ -20,7 +20,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/poorny/ocrsdk"
+	"github.com/nuveo/ocrsdk"
 )
 
 func main() {
